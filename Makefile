@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 PNG_VERSION     := 1.6.50
 PNG_NAME        := libpng-$(PNG_VERSION)
 JPEG_SRC_NAME   := jpegsrc.v9f
@@ -225,13 +227,13 @@ $(JPEG_SRC)/%/Makefile : $(libjpegconfig)
 # Download sources
 #######################
 $(libtiffconfig) :
-	curl http://download.osgeo.org/libtiff/$(TIFF_NAME).tar.gz | tar -xpf-
+	curl http://download.osgeo.org/libtiff/$(TIFF_NAME).tar.gz | tar -zxpf-
 
 $(libjpegconfig) :
-	curl http://www.ijg.org/files/$(JPEG_SRC_NAME).tar.gz | tar -xpf-
+	curl http://www.ijg.org/files/$(JPEG_SRC_NAME).tar.gz | tar -zxpf-
 
 $(libpngconfig) :
-	curl -L https://downloads.sourceforge.net/project/libpng/libpng16/$(PNG_VERSION)/$(PNG_NAME).tar.gz | tar -xpf-
+	curl -L https://downloads.sourceforge.net/project/libpng/libpng16/$(PNG_VERSION)/$(PNG_NAME).tar.gz | tar -zxpf-
 
 #######################
 # Clean
