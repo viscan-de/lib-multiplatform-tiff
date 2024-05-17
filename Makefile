@@ -65,6 +65,11 @@ else ifeq ($(platform), macos)
 	platform_version_mins = macosx-version-min=$(MACOS_DEPLOY_TGT) macosx-version-min=$(MACOS_DEPLOY_TGT)
 	archs_all = arm64 x86_64
 	arch_names_all = arm-apple-darwin64 x86_64-apple-darwin
+# make with default build config
+else ifeq ($(platform), posix)
+	PLATFORM_PREFIX=posix
+	archs_all = default
+	arch_names_all = default_name
 # make platform=all
 else ifeq ($(platform), all)
 	# we will call make for all platforms, so nothing to do for now
@@ -102,7 +107,7 @@ dependant_libs = libpng libjpeg libtiff
 
 common_cflags = -arch $(call swap, $*, $(arch_names_all), $(archs_all)) -pipe -no-cpp-precomp -isysroot $$SDKROOT -m$(call swap, $*, $(arch_names_all), $(platform_version_mins)) -O2 -fembed-bitcode
 
-ifneq (,$(filter $(platform),ios macos ios_sim))
+ifneq (,$(filter $(platform),ios macos ios_sim posix))
 .PHONY : all
 all : $(dependant_libs)
 else
@@ -111,6 +116,7 @@ all :
 	$(MAKE) platform=ios
 	$(MAKE) platform=ios_sim
 	$(MAKE) platform=macos
+	$(MAKE) platform=posix
 endif
 
 #######################
@@ -119,9 +125,13 @@ endif
 libtiff : $(libtifffat)
 
 $(libtifffat) : $(libtiff)
-	mkdir -p $(@D)
-	xcrun lipo $(realpath $(addsuffix lib/$(@F), $(libtifffolders_all)) ) -create -output $@
-	mkdir -p $(IMAGE_INC_DIR)
+	mkdir -p $(@D); \
+	if [ "$(platform)" != "posix" ]; then \
+		xcrun lipo $(realpath $(addsuffix lib/$(@F), $(libtifffolders_all)) ) -create -output $@; \
+	else \
+		cp $(realpath $(addsuffix lib/$(@F), $(libtifffolders_all)) ) $@; \
+	fi; \
+	mkdir -p $(IMAGE_INC_DIR); \
 	cp -rvf $(firstword $(libtifffolders))include/*.h $(IMAGE_INC_DIR)
 
 $(libtiff) :  $(libtiffmakefile)
@@ -129,21 +139,32 @@ $(libtiff) :  $(libtiffmakefile)
 	$(MAKE) -sj8 && $(MAKE) install
 
 $(TIFF_SRC)/%/Makefile : $(libtiffconfig)
-	export SDKROOT="$(call swap, $*, $(arch_names_all), $(sdks))" ; \
-	export CFLAGS="$(common_cflags)" ; \
-	export CPPFLAGS=$$CFLAGS ; \
-	export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
-	export LDFLAGS="-L$$SDKROOT/usr/lib/" ; \
 	mkdir -p $(@D) ; \
 	cd $(@D) ; \
-	../configure CXX="$(TARGET_CXX) --target=$*" CC="$(TARGET_CC) --target=$*" --host=$* --enable-fast-install --enable-shared=no --prefix=`pwd` --without-x --with-jpeg-include-dir=$(abspath $(@D)/../../$(JPEG_DIR_NAME)/$*/include) --with-jpeg-lib-dir=$(abspath $(@D)/../../$(JPEG_DIR_NAME)/$*/lib)
+	if [ "$(platform)" == "posix" ]; then \
+		export CFLAGS=-O2 ; \
+		export CPPFLAGS=$$CFLAGS ; \
+		export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
+		../configure --enable-fast-install --enable-shared=no --prefix=`pwd` --without-x --with-jpeg-include-dir=$(abspath $(@D)/../../$(JPEG_DIR_NAME)/$*/include) --with-jpeg-lib-dir=$(abspath $(@D)/../../$(JPEG_DIR_NAME)/$*/lib); \
+	else \
+		export SDKROOT="$(call swap, $*, $(arch_names_all), $(sdks))" ; \
+		export CFLAGS="$(common_cflags)" ; \
+		export CPPFLAGS=$$CFLAGS ; \
+		export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
+		export LDFLAGS="-L$$SDKROOT/usr/lib/" ; \
+		../configure CXX="$(TARGET_CXX) --target=$*" CC="$(TARGET_CC) --target=$*" --host=$* --enable-fast-install --enable-shared=no --prefix=`pwd` --without-x --with-jpeg-include-dir=$(abspath $(@D)/../../$(JPEG_DIR_NAME)/$*/include) --with-jpeg-lib-dir=$(abspath $(@D)/../../$(JPEG_DIR_NAME)/$*/lib); \
+	fi
 
 libpng : $(libpngfat)
 
 $(libpngfat) : $(libpng)
-	mkdir -p $(@D)
-	xcrun lipo $(realpath $(addsuffix lib/$(@F), $(libpngfolders_all)) ) -create -output $@
-	mkdir -p $(IMAGE_INC_DIR)
+	mkdir -p $(@D); \
+	if [ "$(platform)" != "posix" ]; then \
+		xcrun lipo $(realpath $(addsuffix lib/$(@F), $(libpngfolders_all)) ) -create -output $@; \
+	else \
+		cp $(realpath $(addsuffix lib/$(@F), $(libpngfolders_all)) ) $@; \
+	fi; \
+	mkdir -p $(IMAGE_INC_DIR); \
 	cp -rvf $(firstword $(libpngfolders))include/*.h $(IMAGE_INC_DIR)
 
 $(libpng) : $(libpngmakefile)
@@ -151,21 +172,32 @@ $(libpng) : $(libpngmakefile)
 	$(MAKE) -sj8 && $(MAKE) install
 
 $(PNG_SRC)/%/Makefile : $(libpngconfig)
-	export SDKROOT="$(call swap, $*, $(arch_names_all), $(sdks))" ; \
-	export CFLAGS="$(common_cflags)" ; \
-	export CPPFLAGS=$$CFLAGS ; \
-	export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
-	export LDFLAGS="-L$$SDKROOT/usr/lib/" ; \
 	mkdir -p $(@D) ; \
 	cd $(@D) ; \
-	../configure CXX="$(TARGET_CXX) --target=$*" CC="$(TARGET_CC) --target=$*" --host=$* --enable-shared=no --prefix=`pwd`
+	if [ "$(platform)" == "posix" ]; then \
+		export CFLAGS=-O2 ; \
+		export CPPFLAGS=$$CFLAGS ; \
+		export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
+		../configure --enable-shared=no --prefix=`pwd`; \
+	else \
+		export SDKROOT="$(call swap, $*, $(arch_names_all), $(sdks))" ; \
+		export CFLAGS="$(common_cflags)" ; \
+		export CPPFLAGS=$$CFLAGS ; \
+		export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
+		export LDFLAGS="-L$$SDKROOT/usr/lib/" ; \
+		../configure CXX="$(TARGET_CXX) --target=$*" CC="$(TARGET_CC) --target=$*" --host=$* --enable-shared=no --prefix=`pwd`; \
+	fi
 
 libjpeg : $(libjpegfat)
 
 $(libjpegfat) : $(libjpeg)
-	mkdir -p $(@D)
-	xcrun lipo $(realpath $(addsuffix lib/$(@F), $(libjpegfolders_all)) ) -create -output $@
-	mkdir -p $(IMAGE_INC_DIR)
+	mkdir -p $(@D); \
+	if [ "$(platform)" != "posix" ]; then \
+		xcrun lipo $(realpath $(addsuffix lib/$(@F), $(libjpegfolders_all)) ) -create -output $@; \
+	else \
+		cp $(realpath $(addsuffix lib/$(@F), $(libjpegfolders_all)) ) $@; \
+	fi; \
+	mkdir -p $(IMAGE_INC_DIR); \
 	cp -rvf $(firstword $(libjpegfolders))include/*.h $(IMAGE_INC_DIR)
 
 $(libjpeg) : $(libjpegmakefile)
@@ -173,14 +205,21 @@ $(libjpeg) : $(libjpegmakefile)
 	$(MAKE) -sj8 && $(MAKE) install
 
 $(JPEG_SRC)/%/Makefile : $(libjpegconfig)
-	export SDKROOT="$(call swap, $*, $(arch_names_all), $(sdks))" ; \
-	export CFLAGS="$(common_cflags)" ; \
-	export CPPFLAGS=$$CFLAGS ; \
-	export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
-	export LDFLAGS="-L$$SDKROOT/usr/lib/" ; \
 	mkdir -p $(@D) ; \
 	cd $(@D) ; \
-	../configure CXX="$(TARGET_CXX) --target=$*" CC="$(TARGET_CC) --target=$*" --host=$* --enable-shared=no --prefix=`pwd`
+	if [ "$(platform)" == "posix" ]; then \
+		export CFLAGS=-O2 ; \
+		export CPPFLAGS=$$CFLAGS ; \
+		export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
+		../configure --enable-shared=no --prefix=`pwd`; \
+	else \
+		export SDKROOT="$(call swap, $*, $(arch_names_all), $(sdks))" ; \
+		export CFLAGS="$(common_cflags)" ; \
+		export CPPFLAGS=$$CFLAGS ; \
+		export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
+		export LDFLAGS="-L$$SDKROOT/usr/lib/" ; \
+		../configure CXX="$(TARGET_CXX) --target=$*" CC="$(TARGET_CC) --target=$*" --host=$* --enable-shared=no --prefix=`pwd`; \
+	fi
 
 #######################
 # Download sources
