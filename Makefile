@@ -33,27 +33,43 @@ swap  = $(word $(call index,$(1),$(2)),$(3))
 ifeq ($(platform), ios)
 	PLATFORM_PREFIX=ios
 	SDK_IPHONEOS_PATH=$(shell xcrun --sdk iphoneos --show-sdk-path)
-	SDK_IPHONESIMULATOR_PATH=$(shell xcrun --sdk iphonesimulator --show-sdk-path)
-	IOS_DEPLOY_TGT="11.0"
+	IOS_DEPLOY_TGT="13.0"
 
-	sdks = $(SDK_IPHONEOS_PATH) $(SDK_IPHONESIMULATOR_PATH)
-	platform_version_mins = iphoneos-version-min=$(IOS_DEPLOY_TGT) ios-simulator-version-min=$(IOS_DEPLOY_TGT)
+	sdks = $(SDK_IPHONEOS_PATH)
+	platform_version_mins = iphoneos-version-min=$(IOS_DEPLOY_TGT)
+	archs_all = arm64
+	arch_names_all = arm-apple-darwin64
+
+#	SDK_IPHONESIMULATOR_PATH=$(shell xcrun --sdk iphonesimulator --show-sdk-path)
+#	sdks = $(SDK_IPHONEOS_PATH) $(SDK_IPHONESIMULATOR_PATH)
+#	platform_version_mins = iphoneos-version-min=$(IOS_DEPLOY_TGT) ios-simulator-version-min=$(IOS_DEPLOY_TGT)
+#	archs_all = arm64 x86_64
+#	arch_names_all = arm-apple-darwin64 x86_64-apple-darwin
+else ifeq ($(platform), ios_sim)
+	PLATFORM_PREFIX=ios_sim
+	SDK_IPHONEOS_PATH=$(shell xcrun --sdk iphoneos --show-sdk-path)
+	SDK_IPHONESIMULATOR_PATH=$(shell xcrun --sdk iphonesimulator --show-sdk-path)
+	IOS_DEPLOY_TGT="13.0"
+
+	sdks = $(SDK_IPHONESIMULATOR_PATH) $(SDK_IPHONESIMULATOR_PATH)
+	platform_version_mins = ios-simulator-version-min=$(IOS_DEPLOY_TGT) ios-simulator-version-min=$(IOS_DEPLOY_TGT)
 	archs_all = arm64 x86_64
 	arch_names_all = arm-apple-darwin64 x86_64-apple-darwin
 # make platform=macos
 else ifeq ($(platform), macos)
 	PLATFORM_PREFIX=macos
 	SDK_MACOS_PATH=$(shell xcrun --sdk macosx --show-sdk-path)
-	MACOS_DEPLOY_TGT="10.13"
+	MACOS_DEPLOY_TGT="12"
 
-	sdks = $(SDK_MACOS_PATH)
-	platform_version_mins = macosx-version-min=$(MACOS_DEPLOY_TGT)
-	archs_all = x86_64
-	arch_names_all = x86_64-apple-darwin
+	sdks = $(SDK_MACOS_PATH) $(SDK_MACOS_PATH)
+	platform_version_mins = macosx-version-min=$(MACOS_DEPLOY_TGT) macosx-version-min=$(MACOS_DEPLOY_TGT)
+	archs_all = arm64 x86_64
+	arch_names_all = arm-apple-darwin64 x86_64-apple-darwin
 # make platform=all
 else ifeq ($(platform), all)
 	# we will call make for all platforms, so nothing to do for now
 endif
+
 
 # TODO: Maybe dependencies dir can be removed as it's unnecessary scoping
 IMAGE_LIB_DIR = $(shell pwd)/$(PLATFORM_PREFIX)/dependencies/lib/
@@ -86,13 +102,14 @@ dependant_libs = libpng libjpeg libtiff
 
 common_cflags = -arch $(call swap, $*, $(arch_names_all), $(archs_all)) -pipe -no-cpp-precomp -isysroot $$SDKROOT -m$(call swap, $*, $(arch_names_all), $(platform_version_mins)) -O2 -fembed-bitcode
 
-ifneq (,$(filter $(platform),ios macos))
+ifneq (,$(filter $(platform),ios macos ios_sim))
 .PHONY : all
 all : $(dependant_libs)
 else
 .PHONY : all
 all :
 	$(MAKE) platform=ios
+	$(MAKE) platform=ios_sim
 	$(MAKE) platform=macos
 endif
 
