@@ -9,9 +9,20 @@ TIFF_NAME       := tiff-4.7.0
 
 XCODE_DEVELOPER_PATH="`xcode-select -p`"
 XCODE_DEVELOPER_PATH_BIN=$(XCODE_DEVELOPER_PATH)/usr/bin
+ifeq ($(cxx),)
 TARGET_CXX="$(XCODE_DEVELOPER_PATH_BIN)/g++"
 TARGET_CXX_FOR_BUILD="$(XCODE_DEVELOPER_PATH_BIN)/g++"
 TARGET_CC="$(XCODE_DEVELOPER_PATH_BIN)/gcc"
+else
+TARGET_CXX="$(cxx)"
+TARGET_CXX_FOR_BUILD="$(cxx)"
+ifeq ($(cc),)
+$(error CXX specified. Please specify CC.)
+endif
+TARGET_CC="$(cc)"
+endif
+
+
 
 IMAGE_SRC = $(shell pwd)
 PNG_SRC   = $(IMAGE_SRC)/$(PNG_NAME)
@@ -31,32 +42,28 @@ swap  = $(word $(call index,$(1),$(2)),$(3))
 
 # platform specific config
 #
+
 # make platform=ios
 ifeq ($(platform), ios)
 	PLATFORM_PREFIX=ios
 	SDK_IPHONEOS_PATH=$(shell xcrun --sdk iphoneos --show-sdk-path)
 	IOS_DEPLOY_TGT="13.0"
-
 	sdks = $(SDK_IPHONEOS_PATH)
 	platform_version_mins = iphoneos-version-min=$(IOS_DEPLOY_TGT)
 	archs_all = arm64
 	arch_names_all = arm-apple-darwin64
 
-#	SDK_IPHONESIMULATOR_PATH=$(shell xcrun --sdk iphonesimulator --show-sdk-path)
-#	sdks = $(SDK_IPHONEOS_PATH) $(SDK_IPHONESIMULATOR_PATH)
-#	platform_version_mins = iphoneos-version-min=$(IOS_DEPLOY_TGT) ios-simulator-version-min=$(IOS_DEPLOY_TGT)
-#	archs_all = arm64 x86_64
-#	arch_names_all = arm-apple-darwin64 x86_64-apple-darwin
+# make platform=ios_sim
 else ifeq ($(platform), ios_sim)
 	PLATFORM_PREFIX=ios_sim
 	SDK_IPHONEOS_PATH=$(shell xcrun --sdk iphoneos --show-sdk-path)
 	SDK_IPHONESIMULATOR_PATH=$(shell xcrun --sdk iphonesimulator --show-sdk-path)
 	IOS_DEPLOY_TGT="13.0"
-
 	sdks = $(SDK_IPHONESIMULATOR_PATH) $(SDK_IPHONESIMULATOR_PATH)
 	platform_version_mins = ios-simulator-version-min=$(IOS_DEPLOY_TGT) ios-simulator-version-min=$(IOS_DEPLOY_TGT)
 	archs_all = arm64 x86_64
 	arch_names_all = arm-apple-darwin64 x86_64-apple-darwin
+
 # make platform=macos
 else ifeq ($(platform), macos)
 	PLATFORM_PREFIX=macos
@@ -67,11 +74,13 @@ else ifeq ($(platform), macos)
 	platform_version_mins = macosx-version-min=$(MACOS_DEPLOY_TGT) macosx-version-min=$(MACOS_DEPLOY_TGT)
 	archs_all = arm64 x86_64
 	arch_names_all = arm-apple-darwin64 x86_64-apple-darwin
+
 # make with default build config
 else ifeq ($(platform), posix)
 	PLATFORM_PREFIX=posix
 	archs_all = default
 	arch_names_all = default_name
+
 # make platform=all
 else ifeq ($(platform), all)
 	# we will call make for all platforms, so nothing to do for now
