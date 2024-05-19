@@ -7,19 +7,25 @@ JPEG_SRC_NAME   := jpegsrc.v9f
 JPEG_DIR_NAME   := jpeg-9f
 TIFF_NAME       := tiff-4.6.0
 
-XCODE_DEVELOPER_PATH="`xcode-select -p`"
-XCODE_DEVELOPER_PATH_BIN=$(XCODE_DEVELOPER_PATH)/usr/bin
-ifeq ($(cxx),)
-TARGET_CXX="$(XCODE_DEVELOPER_PATH_BIN)/g++"
-TARGET_CXX_FOR_BUILD="$(XCODE_DEVELOPER_PATH_BIN)/g++"
-TARGET_CC="$(XCODE_DEVELOPER_PATH_BIN)/gcc"
+ifeq ($(platform), posix)
+	ifeq ($(cxx),)
+		TARGET_CXX="g++"
+		TARGET_CXX_FOR_BUILD="g++"
+		TARGET_CC="gcc"
+	else
+		TARGET_CXX="$(cxx)"
+		TARGET_CXX_FOR_BUILD="$(cxx)"
+		ifeq ($(cc),)
+			$(error CXX specified. Please specify CC.)
+		endif
+		TARGET_CC="$(cc)"
+	endif
 else
-TARGET_CXX="$(cxx)"
-TARGET_CXX_FOR_BUILD="$(cxx)"
-ifeq ($(cc),)
-$(error CXX specified. Please specify CC.)
-endif
-TARGET_CC="$(cc)"
+	XCODE_DEVELOPER_PATH="`xcode-select -p`"
+	XCODE_DEVELOPER_PATH_BIN=$(XCODE_DEVELOPER_PATH)/usr/bin
+	TARGET_CXX="$(XCODE_DEVELOPER_PATH_BIN)/g++"
+	TARGET_CXX_FOR_BUILD="$(XCODE_DEVELOPER_PATH_BIN)/g++"
+	TARGET_CC="$(XCODE_DEVELOPER_PATH_BIN)/gcc"
 endif
 
 
@@ -156,7 +162,7 @@ $(TIFF_SRC)/%/Makefile : $(libtiffconfig)
 		export CFLAGS=-O2 ; \
 		export CPPFLAGS=$$CFLAGS ; \
 		export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
-		../configure --enable-fast-install --enable-shared=no --prefix=`pwd` --without-x --with-jpeg-include-dir=$(abspath $(@D)/../../$(JPEG_DIR_NAME)/$*/include) --with-jpeg-lib-dir=$(abspath $(@D)/../../$(JPEG_DIR_NAME)/$*/lib); \
+		../configure CC="$(TARGET_CC)" CXX="$(TARGET_CXX)" --enable-fast-install --enable-shared=no --prefix=`pwd` --without-x --with-jpeg-include-dir=$(abspath $(@D)/../../$(JPEG_DIR_NAME)/$*/include) --with-jpeg-lib-dir=$(abspath $(@D)/../../$(JPEG_DIR_NAME)/$*/lib); \
 	else \
 		export SDKROOT="$(call swap, $*, $(arch_names_all), $(sdks))" ; \
 		export CFLAGS="$(common_cflags)" ; \
@@ -189,7 +195,7 @@ $(PNG_SRC)/%/Makefile : $(libpngconfig)
 		export CFLAGS=-O2 ; \
 		export CPPFLAGS=$$CFLAGS ; \
 		export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
-		../configure --enable-shared=no --prefix=`pwd`; \
+		../configure CC="$(TARGET_CC)" CXX="$(TARGET_CXX)" --enable-shared=no --prefix=`pwd`; \
 	else \
 		export SDKROOT="$(call swap, $*, $(arch_names_all), $(sdks))" ; \
 		export CFLAGS="$(common_cflags)" ; \
@@ -222,7 +228,7 @@ $(JPEG_SRC)/%/Makefile : $(libjpegconfig)
 		export CFLAGS=-O2 ; \
 		export CPPFLAGS=$$CFLAGS ; \
 		export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
-		../configure --enable-shared=no --prefix=`pwd`; \
+		../configure CC="$(TARGET_CC)" CXX="$(TARGET_CXX)" --enable-shared=no --prefix=`pwd`; \
 	else \
 		export SDKROOT="$(call swap, $*, $(arch_names_all), $(sdks))" ; \
 		export CFLAGS="$(common_cflags)" ; \
