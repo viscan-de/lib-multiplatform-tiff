@@ -76,8 +76,8 @@ else ifeq ($(platform), macos)
 	SDK_MACOS_PATH=$(shell xcrun --sdk macosx --show-sdk-path)
 	MACOS_DEPLOY_TGT="12"
 
-	sdks = $(SDK_MACOS_PATH)
-	platform_version_mins = macosx-version-min=$(MACOS_DEPLOY_TGT)
+	sdks = $(SDK_MACOS_PATH) $(SDK_MACOS_PATH)
+	platform_version_mins = macosx-version-min=$(MACOS_DEPLOY_TGT) macosx-version-min=$(MACOS_DEPLOY_TGT)
 	archs_all = arm64 x86_64
 	arch_names_all = arm-apple-darwin64 x86_64-apple-darwin
 
