@@ -78,8 +78,8 @@ else ifeq ($(platform), macos)
 
 	sdks = $(SDK_MACOS_PATH)
 	platform_version_mins = macosx-version-min=$(MACOS_DEPLOY_TGT)
-	archs_all = x86_64
-	arch_names_all = x86_64-apple-darwin
+	archs_all = arm64 x86_64
+	arch_names_all = arm-apple-darwin64 x86_64-apple-darwin
 
 # make with default build config
 else ifeq ($(platform), posix)
