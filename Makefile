@@ -9,16 +9,16 @@ TIFF_NAME       := tiff-4.6.0
 
 ifeq ($(platform), posix)
 	ifeq ($(cxx),)
-		TARGET_CXX="g++ -fPIC"
-		TARGET_CXX_FOR_BUILD="g++ -fPIC"
-		TARGET_CC="gcc -fPIC"
+		TARGET_CXX="g++"
+		TARGET_CXX_FOR_BUILD="g++"
+		TARGET_CC="gcc"
 	else
-		TARGET_CXX="$(cxx) -fPIC"
-		TARGET_CXX_FOR_BUILD="$(cxx) -fPIC"
+		TARGET_CXX="$(cxx)"
+		TARGET_CXX_FOR_BUILD="$(cxx)"
 		ifeq ($(cc),)
 			$(error CXX specified. Please specify CC.)
 		endif
-		TARGET_CC="$(cc) -fPIC"
+		TARGET_CC="$(cc)"
 	endif
 else
 	XCODE_DEVELOPER_PATH="`xcode-select -p`"
