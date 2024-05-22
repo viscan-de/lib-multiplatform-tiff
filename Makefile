@@ -13,12 +13,12 @@ ifeq ($(platform), posix)
 		TARGET_CXX_FOR_BUILD="g++ -fPIC"
 		TARGET_CC="gcc -fPIC"
 	else
-		TARGET_CXX="$(cxx)"
-		TARGET_CXX_FOR_BUILD="$(cxx)"
+		TARGET_CXX="$(cxx) -fPIC"
+		TARGET_CXX_FOR_BUILD="$(cxx) -fPIC"
 		ifeq ($(cc),)
 			$(error CXX specified. Please specify CC.)
 		endif
-		TARGET_CC="$(cc)"
+		TARGET_CC="$(cc) -fPIC"
 	endif
 else
 	XCODE_DEVELOPER_PATH="`xcode-select -p`"
