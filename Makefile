@@ -122,7 +122,11 @@ libtiff    = $(foreach folder, $(libtifffolders), $(addprefix $(folder)lib/, $(l
 
 dependant_libs = libpng libjpeg libtiff
 
-common_cflags = -arch $(call swap, $*, $(arch_names_all), $(archs_all)) -pipe -no-cpp-precomp -isysroot $$SDKROOT -m$(call swap, $*, $(arch_names_all), $(platform_version_mins)) -O2 -fembed-bitcode
+ifeq ($(platform), posix)
+	common_cflags = -O2 -fPIC
+else
+	common_cflags = -arch $(call swap, $*, $(arch_names_all), $(archs_all)) -pipe -no-cpp-precomp -isysroot $$SDKROOT -m$(call swap, $*, $(arch_names_all), $(platform_version_mins)) -O2 -fembed-bitcode
+endif
 
 ifneq (,$(filter $(platform),ios macos ios_sim posix))
 .PHONY : all
@@ -159,7 +163,7 @@ $(TIFF_SRC)/%/Makefile : $(libtiffconfig)
 	mkdir -p $(@D) ; \
 	cd $(@D) ; \
 	if [ "$(platform)" == "posix" ]; then \
-		export CFLAGS=-O2; \
+		export CFLAGS="$(common_cflags)"; \
 		export CPPFLAGS=$$CFLAGS ; \
 		export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
 		../configure CC="$(TARGET_CC)" CXX="$(TARGET_CXX)" --enable-fast-install --enable-shared=no --prefix=`pwd` --without-x --with-jpeg-include-dir=$(abspath $(@D)/../../$(JPEG_DIR_NAME)/$*/include) --with-jpeg-lib-dir=$(abspath $(@D)/../../$(JPEG_DIR_NAME)/$*/lib); \
@@ -192,7 +196,7 @@ $(PNG_SRC)/%/Makefile : $(libpngconfig)
 	mkdir -p $(@D) ; \
 	cd $(@D) ; \
 	if [ "$(platform)" == "posix" ]; then \
-		export CFLAGS=-O2; \
+		export CFLAGS="$(common_cflags)"; \
 		export CPPFLAGS=$$CFLAGS ; \
 		export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
 		../configure CC="$(TARGET_CC)" CXX="$(TARGET_CXX)" --enable-shared=no --prefix=`pwd`; \
@@ -225,7 +229,7 @@ $(JPEG_SRC)/%/Makefile : $(libjpegconfig)
 	mkdir -p $(@D) ; \
 	cd $(@D) ; \
 	if [ "$(platform)" == "posix" ]; then \
-		export CFLAGS=-O2; \
+		export CFLAGS="$(common_cflags)"; \
 		export CPPFLAGS=$$CFLAGS ; \
 		export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
 		../configure CC="$(TARGET_CC)" CXX="$(TARGET_CXX)" --enable-shared=no --prefix=`pwd`; \
