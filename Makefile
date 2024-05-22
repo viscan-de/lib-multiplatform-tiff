@@ -9,9 +9,9 @@ TIFF_NAME       := tiff-4.6.0
 
 ifeq ($(platform), posix)
 	ifeq ($(cxx),)
-		TARGET_CXX="g++"
-		TARGET_CXX_FOR_BUILD="g++"
-		TARGET_CC="gcc"
+		TARGET_CXX="g++ -fPIC"
+		TARGET_CXX_FOR_BUILD="g++ -fPIC"
+		TARGET_CC="gcc -fPIC"
 	else
 		TARGET_CXX="$(cxx)"
 		TARGET_CXX_FOR_BUILD="$(cxx)"
@@ -159,7 +159,7 @@ $(TIFF_SRC)/%/Makefile : $(libtiffconfig)
 	mkdir -p $(@D) ; \
 	cd $(@D) ; \
 	if [ "$(platform)" == "posix" ]; then \
-		export CFLAGS=-O2 -fPIC; \
+		export CFLAGS=-O2; \
 		export CPPFLAGS=$$CFLAGS ; \
 		export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
 		../configure CC="$(TARGET_CC)" CXX="$(TARGET_CXX)" --enable-fast-install --enable-shared=no --prefix=`pwd` --without-x --with-jpeg-include-dir=$(abspath $(@D)/../../$(JPEG_DIR_NAME)/$*/include) --with-jpeg-lib-dir=$(abspath $(@D)/../../$(JPEG_DIR_NAME)/$*/lib); \
@@ -192,7 +192,7 @@ $(PNG_SRC)/%/Makefile : $(libpngconfig)
 	mkdir -p $(@D) ; \
 	cd $(@D) ; \
 	if [ "$(platform)" == "posix" ]; then \
-		export CFLAGS=-O2 -fPIC; \
+		export CFLAGS=-O2; \
 		export CPPFLAGS=$$CFLAGS ; \
 		export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
 		../configure CC="$(TARGET_CC)" CXX="$(TARGET_CXX)" --enable-shared=no --prefix=`pwd`; \
@@ -225,7 +225,7 @@ $(JPEG_SRC)/%/Makefile : $(libjpegconfig)
 	mkdir -p $(@D) ; \
 	cd $(@D) ; \
 	if [ "$(platform)" == "posix" ]; then \
-		export CFLAGS=-O2 -fPIC; \
+		export CFLAGS=-O2; \
 		export CPPFLAGS=$$CFLAGS ; \
 		export CXXFLAGS="$$CFLAGS -Wno-deprecated-register"; \
 		../configure CC="$(TARGET_CC)" CXX="$(TARGET_CXX)" --enable-shared=no --prefix=`pwd`; \
