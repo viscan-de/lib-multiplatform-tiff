@@ -1,11 +1,11 @@
 SHELL := /bin/bash
 
-PNG_VERSION     := 1.6.42
+PNG_VERSION     := 1.6.50
 PNG_NAME        := libpng-$(PNG_VERSION)
 JPEG_SRC_NAME   := jpegsrc.v9f
 # folder name after the JPEG_SRC_NAME archive has been unpacked
 JPEG_DIR_NAME   := jpeg-9f
-TIFF_NAME       := tiff-4.6.0
+TIFF_NAME       := tiff-4.7.0
 
 ifeq ($(platform), posix)
 	ifeq ($(cxx),)
@@ -27,7 +27,6 @@ else
 	TARGET_CXX_FOR_BUILD="$(XCODE_DEVELOPER_PATH_BIN)/g++"
 	TARGET_CC="$(XCODE_DEVELOPER_PATH_BIN)/gcc"
 endif
-
 
 
 IMAGE_SRC = $(shell pwd)
