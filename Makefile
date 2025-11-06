@@ -74,7 +74,7 @@ else ifeq ($(platform), ios_sim)
 else ifeq ($(platform), macos)
 	PLATFORM_PREFIX=macos
 	SDK_MACOS_PATH=$(shell xcrun --sdk macosx --show-sdk-path)
-	MACOS_DEPLOY_TGT="12"
+	MACOS_DEPLOY_TGT="13.0"
 
 	sdks = $(SDK_MACOS_PATH) $(SDK_MACOS_PATH)
 	platform_version_mins = macosx-version-min=$(MACOS_DEPLOY_TGT) macosx-version-min=$(MACOS_DEPLOY_TGT)
