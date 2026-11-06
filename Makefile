@@ -1,11 +1,11 @@
 SHELL := /bin/bash
 
-PNG_VERSION     := 1.6.50
+PNG_VERSION     := 1.6.59
 PNG_NAME        := libpng-$(PNG_VERSION)
 JPEG_SRC_NAME   := jpegsrc.v9f
 # folder name after the JPEG_SRC_NAME archive has been unpacked
 JPEG_DIR_NAME   := jpeg-9f
-TIFF_NAME       := tiff-4.7.0
+TIFF_NAME       := tiff-4.7.2
 
 ifeq ($(platform), posix)
 	ifeq ($(cxx),)
